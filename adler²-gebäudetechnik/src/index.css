@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-body, "Inter"), "Inter", sans-serif;
+  --font-title: var(--font-heading, "Inter"), "Inter", sans-serif;
+  
+  --color-primary: var(--primary-color, #0a1e36);
+  --color-accent: var(--accent-color, #f27d26);
+  --color-title: var(--title-color, #0a1e36);
+  --color-body-text: var(--body-color, #4b5563);
+  --color-text-dark: #1a1a1a;
+  --color-bg-alt: #f4f6f8;
+  --color-danger: #b32d2d;
+  --radius-custom: var(--border-radius, 2px);
+}
+
+@layer base {
+  :root {
+    --font-body: "Inter";
+    --font-heading: "Inter";
+    --primary-color: #0a1e36;
+    --accent-color: #f27d26;
+    --title-color: #0a1e36;
+    --body-color: #4b5563;
+    --border-radius: 2px;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+    font-size: var(--font-base-size, 16px);
+  }
+  
+  body {
+    @apply antialiased bg-white font-sans;
+    color: var(--body-color);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight font-title;
+    color: var(--title-color);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-5 py-2.5 bg-primary text-white font-semibold uppercase tracking-wider text-xs rounded-custom transition-all hover:bg-primary/90;
+  }
+  
+  .btn-outline {
+    @apply px-5 py-2.5 border border-primary text-primary font-semibold uppercase tracking-wider text-xs rounded-custom transition-all hover:bg-primary hover:text-white;
+  }
+
+  .btn-danger {
+    @apply px-4 py-2 bg-danger text-white font-semibold uppercase tracking-wider text-[11px] rounded-[2px] transition-all hover:opacity-90;
+  }
+}

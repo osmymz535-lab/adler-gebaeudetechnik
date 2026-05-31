@@ -1,0 +1,77 @@
+{
+  "entities": {
+    "WebsiteContent": {
+      "title": "WebsiteContent",
+      "description": "The complete content and configuration for the Adler2 website, including SEO, design, and navigational settings.",
+      "type": "object",
+      "properties": {
+        "companyName": { "type": "string" },
+        "ownerName": { "type": "string" },
+        "tagline": { "type": "string" },
+        "introText": { "type": "string" },
+        "address": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "location": { "type": "string" },
+        "serviceAreasRange": { "type": "string" },
+        "socialLinks": { "type": "object" },
+        "slides": { "type": "array" },
+        "services": { "type": "array" },
+        "ratgeberCards": { "type": "array" },
+        "blogPosts": { "type": "array" },
+        "gallery": { "type": "array" },
+        "jobs": { "type": "array" },
+        "processDetails": { "type": "array" },
+        "sectionVisibility": { "type": "object" },
+        "designSettings": { "type": "object" },
+        "navigation": { "type": "object" },
+        "seo": { "type": "object" },
+        "forms": { "type": "object" },
+        "pages": { "type": "object" }
+      }
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile containing roles and metadata for administrative access.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "editor", "guest"] },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "ContactSubmission": {
+      "title": "ContactSubmission",
+      "description": "A message submitted through the public contact form.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "message": { "type": "string" },
+        "subject": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "message", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/content/website": {
+      "schema": "WebsiteContent",
+      "description": "Primary content document for the entire website."
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Private user profile data including authorization role."
+    },
+    "/contact_submissions/{submissionId}": {
+      "schema": "ContactSubmission",
+      "description": "Messages sent by visitors via the contact forms."
+    }
+  }
+}

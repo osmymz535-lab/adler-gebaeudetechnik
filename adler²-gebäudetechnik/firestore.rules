@@ -1,0 +1,125 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: content
+    // Document: website
+    // Fields: companyName (string), ownerName (string), tagline (string), introText (string), 
+    //         address (string), phone (string), email (string), slides (list), services (list), 
+    //         designSettings (map), navigation (map), seo (map), forms (map), pages (map), etc.
+    //
+    // Collection: users
+    // Document: {userId}
+    // Fields: 
+    //   - uid: string (required) - Firebase Auth UID
+    //   - email: string (required) - User email
+    //   - role: string (required, ['admin', 'editor', 'guest']) - User access level
+    //   - displayName: string (optional)
+    //   - photoURL: string (optional)
+    //   - createdAt: timestamp (optional)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Role-based check
+    function hasRole(role) {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') || 
+        (request.auth.token.email == "osm.ymz535@gmail.com" && request.auth.token.email_verified == true) ||
+        (exists(/databases/$(database)/documents/content/website) &&
+         request.auth.token.email in get(/databases/$(database)/documents/content/website).data.authorizedAdmins)
+      );
+    }
+
+    // Validation Helpers
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidString(val, maxLen) {
+      return val is string && val.size() <= maxLen;
+    }
+
+    // ===============================================================
+    // Validator Functions
+    // ===============================================================
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role']) &&
+             data.uid == request.auth.uid &&
+             isValidEmail(data.email) &&
+             data.role in ['admin', 'editor', 'guest'] &&
+             (!('displayName' in data) || isValidString(data.displayName, 100)) &&
+             (!('photoURL' in data) || isValidString(data.photoURL, 500));
+    }
+
+    function isValidWebsiteContent(data) {
+      // Basic type checks and size limits to prevent Resource Exhaustion/DoS
+      return data.companyName is string && data.companyName.size() < 200 &&
+             data.tagline is string && data.tagline.size() < 500 &&
+             data.introText is string && data.introText.size() < 2000 &&
+             data.address is string && data.address.size() < 500 &&
+             data.email is string && isValidEmail(data.email) &&
+             data.designSettings is map &&
+             data.navigation is map &&
+             (!('authorizedAdmins' in data) || (data.authorizedAdmins is list && data.authorizedAdmins.size() < 50));
+    }
+
+    // ===============================================================
+    // Match Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // On create: users can register themselves with 'guest' role by default
+      // On update: users can change display info but NOT their role (unless admin)
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && 
+                     (request.resource.data.role == 'guest' || isAdmin());
+      
+      allow update: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && 
+                     (request.resource.data.role == resource.data.role || isAdmin());
+      
+      allow delete: if isAdmin();
+    }
+
+    match /content/website {
+      allow read: if true; // Publicly accessible content
+      allow write: if isAdmin() && isValidWebsiteContent(request.resource.data);
+    }
+
+    match /contact_submissions/{submissionId} {
+      allow create: if request.resource.data.name is string && request.resource.data.name.size() <= 200 &&
+                    request.resource.data.email is string && isValidEmail(request.resource.data.email) &&
+                    request.resource.data.message is string && request.resource.data.message.size() <= 3000 &&
+                    request.resource.data.get('phone', '') is string && request.resource.data.get('phone', '').size() <= 100 &&
+                    request.resource.data.get('service', '') is string && request.resource.data.get('service', '').size() <= 200;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /system/connection_test {
+      allow read: if true;
+    }
+  }
+}
