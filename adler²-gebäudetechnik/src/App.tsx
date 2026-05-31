@@ -8,7 +8,6 @@ import Admin from './pages/Admin';
 import DetailPage from './pages/DetailPage';
 import ContactPage from './pages/ContactPage';
 import BlogPage from './pages/BlogPage';
-import ProcessDetailPage from './pages/DetailPage';
 import GalleryPage from './pages/GalleryPage';
 import JobsPage from './pages/JobsPage';
 import JobDetailPage from './pages/JobDetailPage';
