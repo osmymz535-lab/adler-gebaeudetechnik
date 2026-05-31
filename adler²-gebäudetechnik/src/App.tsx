@@ -99,7 +99,6 @@ function AppContent() {
   );
 }
 
-// Simple Dispatcher to decide between regular DetailPage and ProcessDetailPage
 const Dispatcher = () => {
   const { id } = useParams<{ id: string }>();
   const processIds = ['beratung', 'installation', 'wartung'];
